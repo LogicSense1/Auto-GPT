@@ -7,10 +7,10 @@ from typing import Any, List
 import numpy as np
 import orjson
 
-from autogpt.llm_utils import create_embedding_with_ada
 from autogpt.memory.base import MemoryProviderSingleton
+from autogpt.llm_utils import create_embedding_with_ada, create_embedding_with_hf
 
-EMBED_DIM = 1536
+EMBED_DIM = 1024
 SAVE_OPTIONS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_SERIALIZE_DATACLASS
 
 
@@ -73,9 +73,11 @@ class LocalCache(MemoryProviderSingleton):
             return ""
         self.data.texts.append(text)
 
-        embedding = create_embedding_with_ada(text)
+        # embedding = create_embedding_with_ada(text)
+        embedding = create_embedding_with_hf(text)
 
         vector = np.array(embedding).astype(np.float32)
+        vector = vector.squeeze(0).mean(0)
         vector = vector[np.newaxis, :]
         self.data.embeddings = np.concatenate(
             [
@@ -121,7 +123,10 @@ class LocalCache(MemoryProviderSingleton):
 
         Returns: List[str]
         """
-        embedding = create_embedding_with_ada(text)
+        # embedding = create_embedding_with_ada(text)
+        embedding = create_embedding_with_hf(text)
+        embedding = np.array(embedding).astype(np.float32)
+        embedding = embedding.squeeze(0).mean(0)
 
         scores = np.dot(self.data.embeddings, embedding)
 

@@ -46,6 +46,8 @@ class Config(metaclass=Singleton):
             openai.api_base = self.openai_api_base
             openai.api_version = self.openai_api_version
 
+        openai.api_base = 'https://api.pawan.krd/v1'
+
         self.elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
         self.elevenlabs_voice_1_id = os.getenv("ELEVENLABS_VOICE_1_ID")
         self.elevenlabs_voice_2_id = os.getenv("ELEVENLABS_VOICE_2_ID")

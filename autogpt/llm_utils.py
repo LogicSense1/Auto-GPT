@@ -9,6 +9,9 @@ from openai.error import APIError, RateLimitError
 
 from autogpt.config import Config
 from autogpt.logs import logger
+import numpy as np
+
+import requests
 
 CFG = Config()
 
@@ -170,3 +173,22 @@ def create_embedding_with_ada(text) -> list:
                 f"API Bad gateway. Waiting {backoff} seconds..." + Fore.RESET,
             )
         time.sleep(backoff)
+
+def create_embedding_with_hf(text) -> np.array:
+    API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large"
+    hf_api_key = CFG.huggingface_api_token
+    headers = {"Authorization": f"Bearer {hf_api_key}"}
+
+    def query(payload):
+        response = requests.post(API_URL, headers=headers, json=payload)
+        return response.json()
+    
+    while True:
+        if len(text) > 1024:
+            text = text[:1024]
+        output = query({
+            "inputs": text,
+        })
+        if 'error' not in output:
+            return output
+        
